@@ -11,7 +11,7 @@ class User(db.Model):
     firstName = db.Column(db.String(120), index=True)
     lastName = db.Column(db.String(120), index=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    password = db.Column(db.String, nullable=False)
     posts = db.relationship('Post', back_populates='author')
     comments = db.relationship('Comment', back_populates='user')
     token = db.Column(db.String(32), index=True, unique=True)
@@ -27,23 +27,28 @@ class User(db.Model):
         return f"<User {self.id}|{self.username}>"
     
     # create a method to set the password
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+    def set_password(self, plaintext_password):
+        self.password = generate_password_hash(plaintext_password)
+        self.save()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
     
     # create a method to check the password
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
     # create a method to get a token
-    def get_token(self, expires_in=3600):
+    def get_token(self):
         now = datetime.now(timezone.utc)
-        if self.token and self.token_expiration > now + timedelta(seconds=60):
-            return self.token
+        if self.token and self.token_expiration > now + timedelta(minutes=1):
+            return {"token": self.token, "tokenExpiration": self.token_expiration}
         self.token = secrets.token_hex(16)
-        self.token_expiration = now + timedelta(seconds=expires_in)
-        db.session.add(self)
-        return self.token
-    
+        self.token_expiration = now + timedelta(hours=1)
+        self.save()
+        return {"token": self.token, "tokenExpiration": self.token_expiration}
     
     
     # create a method to get the user as a dictionary
