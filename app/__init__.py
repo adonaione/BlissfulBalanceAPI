@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from flask_cors import CORS # Import CORS to allow Cross Origin Resource Sharing
 from config import Config
 
-
 # Create an instance of Flask called app which will be the central object
 app = Flask(__name__)
 # Set the configuration for the app
