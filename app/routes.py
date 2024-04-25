@@ -89,7 +89,7 @@ def edit_user(user_id):
 
 #delete a user
 @app.route('/users/<int:user_id>', methods=['DELETE'])
-@token_auth.login_required
+# @token_auth.login_required
 def delete_user(user_id):
     #get user based on id
     user = db.session.get(User, user_id)
@@ -97,7 +97,7 @@ def delete_user(user_id):
     if user is None:
         return {"error": "User not found"}, 404
     #get the logged in user based on the token
-    current_user = token_auth.current_user()
+    current_user = current_user()
     #check if the logged in user is the same as the user being deleted
     if user.id != current_user.id:
         return {"error": "You do not have permission to delete this user"}, 403
